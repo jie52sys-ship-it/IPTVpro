@@ -1,32 +1,40 @@
 name: 自动解密更新酷9直播源
 on:
+  # 定时触发：每12小时更新一次
   schedule:
-    - cron: "0 */12 * * *"  # 每12小时自动解密更新一次
-  workflow_dispatch:  # 支持手动触发更新
+    - cron: "0 */12 * * *"
+  # 手动触发：支持手动点按钮更新
+  workflow_dispatch:
 
 jobs:
   decrypt-and-update:
+    # 运行环境：Ubuntu 最新版
     runs-on: ubuntu-latest
     steps:
+      # 步骤1：拉取仓库代码到运行环境
       - name: 拉取仓库代码
         uses: actions/checkout@v4
 
+      # 步骤2：配置Python 3.11环境
       - name: 配置Python环境
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: 安装依赖
+      # 步骤3：安装requests依赖（脚本需要）
+      - name: 安装依赖包
         run: pip install requests
 
-      - name: 执行解密解析脚本
+      # 步骤4：执行解密解析脚本
+      - name: 运行解析脚本
         run: python scripts/decrypt_and_fetch.py
 
-      - name: 提交更新到仓库
+      # 步骤5：提交更新后的直播源文件到仓库
+      - name: 提交并推送更新
         run: |
           git config --global user.name "iptv-bot"
           git config --global user.email "bot@github.com"
           git add live.m3u live.txt
+          # 提交（如果没更新则跳过，避免报错）
           git commit -m "自动解密更新直播源 $(date '+%Y-%m-%d %H:%M')" || true
           git push
-
